@@ -1,32 +1,44 @@
 package main
 
-import cayennelpp "github.com/selvakn/go-cayenne-lib/cayennelpp"
-import "github.com/selvakn/cayenne-lpp-parser/internal"
-import "fmt"
-import "bytes"
+import "github.com/selvakn/go-cayenne-lib/cayennelpp"
+import "./internal"
+import (
+	"fmt"
+	"net/http"
+	"bytes"
+	"log"
+)
+import (
+	"encoding/base64"
+	"io/ioutil"
+	"encoding/json"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+	}
+	payload, err := base64.StdEncoding.DecodeString(string(body))
+
+	//payload := "AQD/AgFkAwIVSgQD6rYFZQH0BmYyB2f/ZAhooAlx/lgADwaCCnMp7wuGAWMCMf5mDIgH/YcAvvUACGoNdBVKDnUA8A92FXwQg04g"
+
+	decoder := cayennelpp.NewDecoder(bytes.NewBuffer(payload))
+	target := internal.NewTarget()
+
+	err = decoder.DecodeUplink(target)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, err)
+	}
+
+	encoder := json.NewEncoder(w)
+	encoder.Encode(target)
+}
 
 func main() {
-  buf := []byte{
-    1, cayennelpp.DigitalInput, 255,
-    2, cayennelpp.DigitalOutput, 100,
-    3, cayennelpp.AnalogInput, 21, 74,
-    4, cayennelpp.AnalogOutput, 234, 182,
-    5, cayennelpp.Luminosity, 1, 244,
-    6, cayennelpp.Presence, 50,
-    7, cayennelpp.Temperature, 255, 100,
-    8, cayennelpp.RelativeHumidity, 160,
-    9, cayennelpp.Accelerometer, 254, 88, 0, 15, 6, 130,
-    10, cayennelpp.BarometricPressure, 41, 239,
-    11, cayennelpp.Gyrometer, 1, 99, 2, 49, 254, 102,
-    12, cayennelpp.GPS, 7, 253, 135, 0, 190, 245, 0, 8, 106,
-    13, cayennelpp.Voltage, 21, 74,
-    14, cayennelpp.Current, 0, 240,
-    15, cayennelpp.Frequency, 21, 124,
-    16, cayennelpp.Energy, 78, 32,
-  }
-  decoder := cayennelpp.NewDecoder(bytes.NewBuffer(buf))
-  target := internal.NewTarget()
+	http.HandleFunc("/", handler)
 
-  err := decoder.DecodeUplink(target)
-  fmt.Println(target, err)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
