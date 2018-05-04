@@ -1,20 +1,20 @@
 package main
 
-import "github.com/selvakn/go-cayenne-lib/cayennelpp"
 import "./internal"
 import (
-	"fmt"
-	"net/http"
 	"bytes"
+	"fmt"
 	"log"
-)
-import (
+	"net/http"
 	"encoding/base64"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"os"
 )
+import "github.com/selvakn/go-cayenne-lib/cayennelpp"
 
-func handler(w http.ResponseWriter, r *http.Request) {
+
+func parseLPP(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -22,7 +22,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	payload, err := base64.StdEncoding.DecodeString(string(body))
 
-	//payload := "AQD/AgFkAwIVSgQD6rYFZQH0BmYyB2f/ZAhooAlx/lgADwaCCnMp7wuGAWMCMf5mDIgH/YcAvvUACGoNdBVKDnUA8A92FXwQg04g"
+	//payload := "AQD/AgFkAwIVSgQD6rYFZQH0BmYyB2f/ZAhooAlx/lgADwaCCnMp7wuGAWMCMf5mDIgH/YcAvvUACGoNdBVKDnUA8A92FXwQg3hpIg=="
 
 	decoder := cayennelpp.NewDecoder(bytes.NewBuffer(payload))
 	target := internal.NewTarget()
@@ -38,7 +38,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/", handler)
-
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	addr := ":" + os.Getenv("PORT")
+	http.HandleFunc("/", parseLPP)
+	log.Fatal(http.ListenAndServe(addr, nil))
 }

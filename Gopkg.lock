@@ -5,7 +5,7 @@
   branch = "master"
   name = "github.com/selvakn/go-cayenne-lib"
   packages = ["cayennelpp"]
-  revision = "5cce1002d57e474ea8e2dce6001052481613efbf"
+  revision = "d8ddb2a28a82d09b3a133e78187f814b03a35441"
 
 [solve-meta]
   analyzer-name = "dep"

@@ -1,0 +1,10 @@
+{
+  "name": "cayenne-lpp-parser",
+  "profile": "selvakn",
+  "cors": {
+    "enable": true
+  },
+  "regions": [
+    "ap-south-1"
+  ]
+}
